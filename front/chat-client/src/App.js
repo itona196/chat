@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import "./App.css";
 
-const socket = io("https://chat-6qhm.onrender.com");
+const socket = io(import.meta.env.VITE_SOCKET_URL);
 
 function App() {
   const [msg, setMsg] = useState("");
@@ -25,21 +25,15 @@ function App() {
       setTimeout(() => setTyping(null), 2000);
     });
 
-<<<<<<< HEAD
     socket.on("loadMessages", (messages) => {
       setAllMsgs(messages);
     });
 
-=======
->>>>>>> f5c80b0f1468ad24cffa279820b498ad1c3cdeb6
     return () => {
       socket.off("welcome");
       socket.off("chatMessage");
       socket.off("typing");
-<<<<<<< HEAD
       socket.off("loadMessages");
-=======
->>>>>>> f5c80b0f1468ad24cffa279820b498ad1c3cdeb6
     };
   }, []);
 

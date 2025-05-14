@@ -3,7 +3,10 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const Message = require('./models/Message'); // Importer le modèle des messages
+const dotenv = require('dotenv');
+const Message = require('./models/message');
+
+dotenv.config(); // Charge les variables d'environnement depuis .env
 
 const app = express();
 app.use(cors());
@@ -11,18 +14,20 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", 
+    origin: "*", // Pour la production, remplace par l'URL de ton front
     methods: ["GET", "POST"]
   }
 });
 
-// Connexion à MongoDB
-mongoose.connect('mongodb://localhost/chat', { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('📡 Connexion à MongoDB réussie'))
-  .catch((err) => console.log('❌ Erreur de connexion à MongoDB', err));
+// Connexion à MongoDB Atlas
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('📡 Connexion à MongoDB Atlas réussie'))
+.catch((err) => console.error('❌ Erreur MongoDB Atlas :', err));
 
-// ✅ Supprimer le doublon
-let users = new Map(); 
+let users = new Map();
 
 io.on('connection', (socket) => {
   console.log('🔌 Nouveau client connecté :', socket.id);
@@ -32,20 +37,14 @@ io.on('connection', (socket) => {
     io.emit('userList', Array.from(users.values()));
     console.log('👤 Utilisateur ajouté :', username);
 
-    // Charger les messages existants depuis MongoDB
     Message.find()
       .sort({ time: 1 })
-      .then((messages) => {
-        socket.emit('loadMessages', messages);
-      })
-      .catch((err) => {
-        console.log('❌ Erreur lors du chargement des messages:', err);
-      });
+      .then((messages) => socket.emit('loadMessages', messages))
+      .catch((err) => console.error('❌ Erreur chargement messages :', err));
   });
 
   socket.on('chatMessage', ({ username, message }) => {
     const newMessage = new Message({ username, message });
-
     newMessage.save()
       .then(() => {
         io.emit('chatMessage', {
@@ -54,9 +53,7 @@ io.on('connection', (socket) => {
           time: newMessage.time
         });
       })
-      .catch((err) => {
-        console.log('❌ Erreur lors de la sauvegarde du message:', err);
-      });
+      .catch((err) => console.error('❌ Erreur sauvegarde message :', err));
   });
 
   socket.on('typing', (username) => {
@@ -73,5 +70,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`🚀 Serveur en ligne sur le port ${PORT}`);
+  console.log(`🚀 Serveur WebSocket en ligne sur le port ${PORT}`);
 });
