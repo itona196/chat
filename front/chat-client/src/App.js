@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
+import "./App.css";
 
 const socket = io("https://chat-6qhm.onrender.com");
 
@@ -54,44 +55,27 @@ function App() {
 
   if (!name) {
     return (
-      <div style={{ padding: 30, fontFamily: "Arial" }}>
+      <div className="container">
         <h2>💬 Chat en temps réel</h2>
         <input
           placeholder="Entrez votre nom pour commencer"
           onBlur={(e) => setName(e.target.value.trim())}
           autoFocus
-          style={{ padding: 8 }}
+          className="username-input"
         />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 30, fontFamily: "Arial" }}>
+    <div className="container">
       <h2>💬 Chat en temps réel</h2>
 
-      <div
-        style={{
-          border: "1px solid #ccc",
-          height: 300,
-          overflowY: "auto",
-          padding: 10,
-          marginBottom: 10,
-          backgroundColor: "#f9f9f9",
-          borderRadius: 6
-        }}
-      >
+      <div className="chat-box">
         {allMsgs.map((m, i) => (
           <div
             key={i}
-            style={{
-              marginBottom: 8,
-              padding: 8,
-              backgroundColor: m.username === name ? "#cce5ff" : "#e2e2e2",
-              borderRadius: 10,
-              maxWidth: "70%",
-              alignSelf: m.username === name ? "flex-end" : "flex-start"
-            }}
+            className={`chat-bubble ${m.username === name ? "own" : "other"}`}
           >
             <strong>{m.username}</strong> : {m.message}
           </div>
@@ -100,19 +84,19 @@ function App() {
       </div>
 
       {typing && typing !== name && (
-        <p style={{ fontStyle: "italic", color: "gray" }}>{typing} est en train d'écrire...</p>
+        <p className="typing-indicator">{typing} est en train d'écrire...</p>
       )}
 
-      <div>
+      <div className="input-group">
         <input
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
           onKeyDown={handleKeyDown}
           onKeyUp={handleTyping}
           placeholder="Votre message"
-          style={{ padding: 8, width: "60%", marginRight: 10 }}
+          className="message-input"
         />
-        <button onClick={handleSend} style={{ padding: 8 }}>Envoyer</button>
+        <button onClick={handleSend} className="send-button">Envoyer</button>
       </div>
     </div>
   );
