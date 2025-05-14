@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import "./App.css";
 
-const socket = io(import.meta.env.VITE_SOCKET_URL);
+const socket = io(process.env.REACT_APP_SOCKET_URL);
+
 
 function App() {
   const [msg, setMsg] = useState("");
