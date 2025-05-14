@@ -3,21 +3,12 @@ import io from "socket.io-client";
 
 const socket = io("https://chat-6qhm.onrender.com");
 
-const generateRandomName = () => {
-  const names = ["Koala", "Tigre", "Zèbre", "Dragon", "Panda", "Chouette"];
-  return "Anonyme " + names[Math.floor(Math.random() * names.length)];
-};
-
 function App() {
   const [msg, setMsg] = useState("");
   const [allMsgs, setAllMsgs] = useState([]);
   const [name, setName] = useState("");
   const [typing, setTyping] = useState(null);
   const bottomRef = useRef(null);
-
-  useEffect(() => {
-    if (!name) setName(generateRandomName());
-  }, []);
 
   useEffect(() => {
     socket.on("welcome", (text) => {
@@ -45,7 +36,7 @@ function App() {
   }, [allMsgs]);
 
   const handleSend = () => {
-    if (!msg.trim()) return;
+    if (!msg.trim() || !name.trim()) return;
     socket.emit("chatMessage", { username: name, message: msg });
     setMsg("");
   };
@@ -54,19 +45,30 @@ function App() {
     socket.emit("typing", name);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  if (!name) {
+    return (
+      <div style={{ padding: 30, fontFamily: "Arial" }}>
+        <h2>💬 Chat en temps réel</h2>
+        <input
+          placeholder="Entrez votre nom pour commencer"
+          onBlur={(e) => setName(e.target.value.trim())}
+          autoFocus
+          style={{ padding: 8 }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: 30, fontFamily: "Arial" }}>
       <h2>💬 Chat en temps réel</h2>
-
-      <div style={{ marginBottom: 10 }}>
-        <label><strong>Votre nom : </strong></label>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Nom d'utilisateur"
-          style={{ padding: 5 }}
-        />
-      </div>
 
       <div
         style={{
@@ -105,7 +107,8 @@ function App() {
         <input
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
-          onKeyDown={handleTyping}
+          onKeyDown={handleKeyDown}
+          onKeyUp={handleTyping}
           placeholder="Votre message"
           style={{ padding: 8, width: "60%", marginRight: 10 }}
         />
