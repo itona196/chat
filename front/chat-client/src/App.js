@@ -1,14 +1,9 @@
-console.log("SOCKET_URL = ", import.meta.env.VITE_SOCKET_URL);
-
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import "./App.css";
 
-const socket = io(process.env.REACT_APP_SOCKET_URL);
 console.log("SOCKET_URL =", process.env.REACT_APP_SOCKET_URL);
-
-
-
+const socket = io(process.env.REACT_APP_SOCKET_URL);
 
 function App() {
   const [msg, setMsg] = useState("");
