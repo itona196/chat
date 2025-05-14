@@ -9,6 +9,7 @@ function App() {
   const [allMsgs, setAllMsgs] = useState([]);
   const [name, setName] = useState("");
   const [typing, setTyping] = useState(null);
+  const [users, setUsers] = useState([]);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -25,10 +26,15 @@ function App() {
       setTimeout(() => setTyping(null), 2000);
     });
 
+    socket.on("userList", (list) => {
+      setUsers(list);
+    });
+
     return () => {
       socket.off("welcome");
       socket.off("chatMessage");
       socket.off("typing");
+      socket.off("userList");
     };
   }, []);
 
@@ -38,12 +44,16 @@ function App() {
 
   const handleSend = () => {
     if (!msg.trim() || !name.trim()) return;
-    socket.emit("chatMessage", { username: name, message: msg });
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    socket.emit("chatMessage", { username: name, message: msg, time });
     setMsg("");
   };
 
   const handleTyping = () => {
-    socket.emit("typing", name);
+    if (name.trim()) {
+      socket.emit("typing", name);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -59,7 +69,13 @@ function App() {
         <h2>💬 Chat en temps réel</h2>
         <input
           placeholder="Entrez votre nom pour commencer"
-          onBlur={(e) => setName(e.target.value.trim())}
+          onBlur={(e) => {
+            const entered = e.target.value.trim();
+            if (entered) {
+              setName(entered);
+              socket.emit("newUser", entered);
+            }
+          }}
           autoFocus
           className="username-input"
         />
@@ -71,6 +87,10 @@ function App() {
     <div className="container">
       <h2>💬 Chat en temps réel</h2>
 
+      <div className="user-list">
+        <strong>Connectés :</strong> {users.join(", ")}
+      </div>
+
       <div className="chat-box">
         {allMsgs.map((m, i) => (
           <div
@@ -78,6 +98,7 @@ function App() {
             className={`chat-bubble ${m.username === name ? "own" : "other"}`}
           >
             <strong>{m.username}</strong> : {m.message}
+            <div className="timestamp">{m.time}</div>
           </div>
         ))}
         <div ref={bottomRef} />
