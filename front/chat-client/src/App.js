@@ -25,15 +25,21 @@ function App() {
       setTimeout(() => setTyping(null), 2000);
     });
 
+<<<<<<< HEAD
     socket.on("loadMessages", (messages) => {
       setAllMsgs(messages);
     });
 
+=======
+>>>>>>> f5c80b0f1468ad24cffa279820b498ad1c3cdeb6
     return () => {
       socket.off("welcome");
       socket.off("chatMessage");
       socket.off("typing");
+<<<<<<< HEAD
       socket.off("loadMessages");
+=======
+>>>>>>> f5c80b0f1468ad24cffa279820b498ad1c3cdeb6
     };
   }, []);
 
